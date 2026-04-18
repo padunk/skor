@@ -1,0 +1,79 @@
+.header {
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-8);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+  border-radius: var(--radius-lg);
+  color: white;
+}
+
+.header-logo svg {
+  width: 28px;
+  height: 28px;
+}
+
+.header-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.header-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--accent-orange);
+}
+
+.header-badge svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 640px) {
+  .header-title {
+    font-size: var(--text-2xl);
+  }
+
+  .header-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .header-logo svg {
+    width: 24px;
+    height: 24px;
+  }
+}

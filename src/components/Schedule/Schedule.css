@@ -1,0 +1,57 @@
+.schedule-section {
+  margin-bottom: var(--space-8);
+}
+
+.schedule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.section-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.add-match-btn {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--accent-blue);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+}
+
+.add-match-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.95);
+}
+
+.add-match-btn:active {
+  transform: translateY(0);
+}
+
+.schedule-rounds {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 640px) {
+  .schedule-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .add-match-btn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,185 @@
+@import './styles/variables.css';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.app {
+  min-height: 100vh;
+  padding: var(--space-4);
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Action bar */
+.action-bar {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--border);
+  margin-top: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.action-bar .btn {
+  gap: var(--space-2);
+}
+
+.action-bar .btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Footer */
+.app-footer {
+  text-align: center;
+  padding: var(--space-8) 0 var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.app-footer p {
+  margin: 0;
+}
+
+/* Section title styling (shared) */
+.section-title {
+  margin: 0 0 var(--space-6);
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  @page {
+    margin: 12mm;
+  }
+
+  .app {
+    padding: 0;
+  }
+
+  .header,
+  .input-section,
+  .leaderboard-section,
+  .action-bar,
+  .app-footer,
+  .action-bar,
+  .help-toggle,
+  .input-actions,
+  .toast-container,
+  .modal-overlay {
+    display: none !important;
+  }
+
+  .container {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .schedule-section {
+    margin: 0;
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    color: #000;
+    margin-bottom: 10px;
+  }
+
+  .schedule-courts {
+    display: block !important;
+  }
+
+  .court-card {
+    border: 1px solid #ccc;
+    background: #fff;
+    box-shadow: none;
+    page-break-inside: avoid;
+    margin-bottom: 14px;
+  }
+
+  .court-header {
+    background: #f5f5f5;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .court-title,
+  .court-match-count,
+  .match-slot {
+    color: #000;
+  }
+
+  .court-icon {
+    background: #e5e5e5;
+    color: #000;
+  }
+
+  .match-card {
+    border: 1px solid #ddd;
+    background: white;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+
+  .team .player-name {
+    color: black;
+  }
+
+  .team.team-winner {
+    background: #e0e0e0;
+  }
+
+  .team.team-loser {
+    background: white;
+    opacity: 1;
+  }
+
+  .score-display {
+    background: white;
+    border: 1px solid #333;
+    color: black;
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .action-bar {
+    flex-direction: column;
+  }
+
+  .action-bar .btn {
+    width: 100%;
+  }
+}
+
+.hidden-clear-btn {
+  display: none;
+}
