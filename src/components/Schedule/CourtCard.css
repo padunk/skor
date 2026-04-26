@@ -85,12 +85,12 @@
 
 @media (min-width: 768px) {
   .schedule-courts {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
     gap: var(--space-6);
   }
 
   .court-card {
     margin-bottom: 0;
+    width: 100%;
   }
 }
