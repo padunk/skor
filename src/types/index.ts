@@ -21,11 +21,15 @@ export interface Match {
   winner: 'A' | 'B' | 'draw' | null;
 }
 
+export type TournamentFormat = 'round_robin' | 'americano' | 'mexicano';
+
 export interface GameState {
   sport: string;
   courts: 1 | 2;
   teamSize: 'single' | 'double';
   durationMinutes: number;
+  format: TournamentFormat;
+  pointsPerMatch: number;
   participants: Player[];
   matches: Match[];
   isGenerated: boolean;
@@ -38,6 +42,7 @@ export interface LeaderboardEntry {
   losses: number;
   draws: number;
   points: number;
+  pointsScored: number;
   matchesPlayed: number;
   rank: number;
 }
@@ -55,6 +60,8 @@ export type GameAction =
   | { type: 'SET_COURTS'; payload: 1 | 2 }
   | { type: 'SET_TEAM_SIZE'; payload: 'single' | 'double' }
   | { type: 'SET_DURATION'; payload: number }
+  | { type: 'SET_FORMAT'; payload: TournamentFormat }
+  | { type: 'SET_POINTS_PER_MATCH'; payload: number }
   | { type: 'SET_PARTICIPANTS'; payload: Player[] }
   | { type: 'GENERATE_MATCHES'; payload: Match[] }
   | { type: 'APPEND_MATCHES'; payload: Match[] }

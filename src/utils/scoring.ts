@@ -1,4 +1,5 @@
-import type { Match, LeaderboardEntry, Player } from '../types';
+import type { Match, LeaderboardEntry, Player, TournamentFormat } from '../types';
+import { computePlayerPoints } from './roundRobin';
 
 // Points awarded for different outcomes
 const POINTS_WIN = 3;
@@ -38,16 +39,33 @@ export function updateMatchScore(
   };
 }
 
+interface PlayerStats {
+  name: string;
+  wins: number;
+  losses: number;
+  draws: number;
+  points: number;
+  pointsScored: number;
+  matchesPlayed: number;
+}
+
 /**
- * Generate leaderboard from all matches
+ * Generate leaderboard from all matches.
+ *
+ * For round_robin (default), entries are sorted by W/L/D points, then wins.
+ * For americano/mexicano, entries are sorted by accumulated raw points scored
+ * (sum of team scoreA/scoreB across matches the player participated in),
+ * then wins. The W/L/D `points` field is still populated for compatibility.
+ *
+ * `pointsScored` is always populated (sum of team scores per player).
  */
 export function generateLeaderboard(
   matches: Match[],
-  players: Player[]
+  players: Player[],
+  format: TournamentFormat = 'round_robin',
 ): LeaderboardEntry[] {
-  // Initialize stats for all players
-  const stats = new Map<string, { name: string; wins: number; losses: number; draws: number; points: number; matchesPlayed: number }>();
-  
+  const stats = new Map<string, PlayerStats>();
+
   for (const player of players) {
     stats.set(player.id, {
       name: player.name,
@@ -55,29 +73,24 @@ export function generateLeaderboard(
       losses: 0,
       draws: 0,
       points: 0,
-      matchesPlayed: 0
+      pointsScored: 0,
+      matchesPlayed: 0,
     });
   }
-  
-  // Process each match
+
   for (const match of matches) {
-    // Skip incomplete matches
     if (match.scoreA === null || match.scoreB === null) continue;
-    
+
     const { winner } = match;
     const teamAPlayers = match.teamA.players;
     const teamBPlayers = match.teamB.players;
-    
-    // Count matches played for all participants
+
     for (const player of [...teamAPlayers, ...teamBPlayers]) {
       const stat = stats.get(player.id);
-      if (stat) {
-        stat.matchesPlayed++;
-      }
+      if (stat) stat.matchesPlayed++;
     }
-    
+
     if (winner === 'A') {
-      // Team A wins
       for (const player of teamAPlayers) {
         const stat = stats.get(player.id);
         if (stat) {
@@ -93,7 +106,6 @@ export function generateLeaderboard(
         }
       }
     } else if (winner === 'B') {
-      // Team B wins
       for (const player of teamBPlayers) {
         const stat = stats.get(player.id);
         if (stat) {
@@ -109,7 +121,6 @@ export function generateLeaderboard(
         }
       }
     } else if (winner === 'draw') {
-      // Draw
       for (const player of [...teamAPlayers, ...teamBPlayers]) {
         const stat = stats.get(player.id);
         if (stat) {
@@ -119,10 +130,15 @@ export function generateLeaderboard(
       }
     }
   }
-  
-  // Convert to leaderboard entries
+
+  // Populate pointsScored from raw team scores (sum of scoreA/scoreB).
+  const pointsScored = computePlayerPoints(matches);
+  for (const [playerId, scored] of pointsScored) {
+    const stat = stats.get(playerId);
+    if (stat) stat.pointsScored = scored;
+  }
+
   const entries: LeaderboardEntry[] = [];
-  
   for (const [playerId, stat] of stats) {
     entries.push({
       playerId,
@@ -131,24 +147,31 @@ export function generateLeaderboard(
       losses: stat.losses,
       draws: stat.draws,
       points: stat.points,
+      pointsScored: stat.pointsScored,
       matchesPlayed: stat.matchesPlayed,
-      rank: 0
+      rank: 0,
     });
   }
-  
-  // Sort by points (desc), then wins (desc), then alphabetically
-  entries.sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    if (b.wins !== a.wins) return b.wins - a.wins;
-    return a.name.localeCompare(b.name);
-  });
-  
-  // Assign ranks
+
+  if (format === 'americano' || format === 'mexicano') {
+    entries.sort((a, b) => {
+      if (b.pointsScored !== a.pointsScored) return b.pointsScored - a.pointsScored;
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      return a.name.localeCompare(b.name);
+    });
+  } else {
+    entries.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
   let currentRank = 1;
   for (const entry of entries) {
     entry.rank = currentRank++;
   }
-  
+
   return entries;
 }
 
@@ -175,15 +198,15 @@ export function formatRank(rank: number): string {
   if (rank === 1) return '1st';
   if (rank === 2) return '2nd';
   if (rank === 3) return '3rd';
-  
+
   // Special cases: 11th, 12th, 13th use 'th'
   const lastDigit = rank % 10;
   const lastTwoDigits = rank % 100;
-  
+
   if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
     return `${rank}th`;
   }
-  
+
   if (lastDigit === 1) return `${rank}st`;
   if (lastDigit === 2) return `${rank}nd`;
   if (lastDigit === 3) return `${rank}rd`;
@@ -201,6 +224,7 @@ export function mergeLeaderboards(
       losses: number;
       draws: number;
       points: number;
+      pointsScored: number;
       matchesPlayed: number;
     }
   >();
@@ -208,11 +232,13 @@ export function mergeLeaderboards(
   for (const leaderboard of leaderboards) {
     for (const entry of leaderboard) {
       const existing = stats.get(entry.playerId);
+      const scored = entry.pointsScored ?? 0;
       if (existing) {
         existing.wins += entry.wins;
         existing.losses += entry.losses;
         existing.draws += entry.draws;
         existing.points += entry.points;
+        existing.pointsScored += scored;
         existing.matchesPlayed += entry.matchesPlayed;
       } else {
         stats.set(entry.playerId, {
@@ -221,6 +247,7 @@ export function mergeLeaderboards(
           losses: entry.losses,
           draws: entry.draws,
           points: entry.points,
+          pointsScored: scored,
           matchesPlayed: entry.matchesPlayed,
         });
       }
@@ -236,6 +263,7 @@ export function mergeLeaderboards(
       losses: stat.losses,
       draws: stat.draws,
       points: stat.points,
+      pointsScored: stat.pointsScored,
       matchesPlayed: stat.matchesPlayed,
       rank: 0,
     });

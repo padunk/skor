@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '../Button';
 import { Select } from '../Select';
 import { parseParticipants, validateParticipants } from '../../utils/parser';
-import type { Player } from '../../types';
+import type { Player, TournamentFormat } from '../../types';
 import './InputSection.css';
 
 const SPORTS = [
@@ -22,15 +22,32 @@ const DURATIONS = [
   { value: '180', label: '3 hours' }
 ];
 
+const FORMATS: { value: TournamentFormat; label: string }[] = [
+  { value: 'round_robin', label: 'Round Robin' },
+  { value: 'americano', label: 'Americano' },
+  { value: 'mexicano', label: 'Mexicano' },
+];
+
+const POINTS_PER_MATCH_OPTIONS = [
+  { value: '16', label: '16 points' },
+  { value: '21', label: '21 points' },
+  { value: '24', label: '24 points' },
+  { value: '32', label: '32 points' },
+];
+
 interface InputSectionProps {
   sport: string;
   courts: 1 | 2;
   teamSize: 'single' | 'double';
   durationMinutes: number;
+  format: TournamentFormat;
+  pointsPerMatch: number;
   onSportChange: (sport: string) => void;
   onCourtsChange: (courts: 1 | 2) => void;
   onTeamSizeChange: (size: 'single' | 'double') => void;
   onDurationChange: (duration: number) => void;
+  onFormatChange: (format: TournamentFormat) => void;
+  onPointsPerMatchChange: (points: number) => void;
   onGenerate: (players: Player[], warnings: string[]) => void;
   disabled?: boolean;
 }
@@ -40,10 +57,14 @@ export function InputSection({
   courts,
   teamSize,
   durationMinutes,
+  format,
+  pointsPerMatch,
   onSportChange,
   onCourtsChange,
   onTeamSizeChange,
   onDurationChange,
+  onFormatChange,
+  onPointsPerMatchChange,
   onGenerate,
   disabled = false
 }: InputSectionProps) {
@@ -148,6 +169,22 @@ export function InputSection({
             value={teamSize}
             onChange={(v) => onTeamSizeChange(v as 'single' | 'double')}
           />
+
+          <Select
+            label="Format"
+            options={FORMATS.map((f) => ({ value: f.value, label: f.label }))}
+            value={format}
+            onChange={(v) => onFormatChange(v as TournamentFormat)}
+          />
+
+          {(format === 'americano' || format === 'mexicano') && (
+            <Select
+              label="Points / match"
+              options={POINTS_PER_MATCH_OPTIONS}
+              value={String(pointsPerMatch)}
+              onChange={(v) => onPointsPerMatchChange(Number(v))}
+            />
+          )}
 
           <Select
             label="Duration"

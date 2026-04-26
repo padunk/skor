@@ -1,4 +1,4 @@
-import type { LeaderboardEntry } from '../../types';
+import type { LeaderboardEntry, TournamentFormat } from '../../types';
 import { formatRank } from '../../utils/scoring';
 import './Leaderboard.css';
 
@@ -7,10 +7,13 @@ interface LeaderboardProps {
   onGenerateMatch?: () => void;
   title?: string;
   isAllTime?: boolean;
+  format?: TournamentFormat;
 }
 
-export function Leaderboard({ entries, onGenerateMatch, title = 'Leaderboard', isAllTime = false }: LeaderboardProps) {
+export function Leaderboard({ entries, onGenerateMatch, title = 'Leaderboard', isAllTime = false, format }: LeaderboardProps) {
   if (entries.length === 0) return null;
+
+  const showPointsScored = format === 'americano' || format === 'mexicano';
 
   const getRankClass = (rank: number) => {
     if (rank === 1) return 'rank-gold';
@@ -51,6 +54,7 @@ export function Leaderboard({ entries, onGenerateMatch, title = 'Leaderboard', i
               <th className="col-stat">W</th>
               <th className="col-stat">L</th>
               <th className="col-stat">D</th>
+              {showPointsScored && <th className="col-points">PS</th>}
               <th className="col-points">Pts</th>
             </tr>
           </thead>
@@ -67,6 +71,7 @@ export function Leaderboard({ entries, onGenerateMatch, title = 'Leaderboard', i
                 <td className="cell-stat">{entry.wins}</td>
                 <td className="cell-stat">{entry.losses}</td>
                 <td className="cell-stat">{entry.draws}</td>
+                {showPointsScored && <td className="cell-points">{entry.pointsScored}</td>}
                 <td className="cell-points">{entry.points}</td>
               </tr>
             ))}

@@ -30,6 +30,8 @@ const initialState: GameState = {
   courts: 2,
   teamSize: "double",
   durationMinutes: 120,
+  format: "round_robin",
+  pointsPerMatch: 24,
   participants: [],
   matches: [],
   isGenerated: false,
@@ -45,6 +47,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, teamSize: action.payload };
     case "SET_DURATION":
       return { ...state, durationMinutes: action.payload };
+    case "SET_FORMAT":
+      return { ...state, format: action.payload };
+    case "SET_POINTS_PER_MATCH":
+      return { ...state, pointsPerMatch: action.payload };
     case "SET_PARTICIPANTS":
       return { ...state, participants: action.payload };
     case "GENERATE_MATCHES":
@@ -81,6 +87,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         state.participants,
         state.courts,
         state.durationMinutes,
+        {
+          format: state.format,
+          teamSize: state.teamSize,
+          pointsPerMatch: state.pointsPerMatch,
+        },
       );
       return { ...state, matches, isGenerated: true };
     }
@@ -114,12 +125,12 @@ export default function App() {
 
   useEffect(() => {
     const currentLeaderboard: LeaderboardEntry[] = state.isGenerated
-      ? generateLeaderboard(state.matches, state.participants)
+      ? generateLeaderboard(state.matches, state.participants, state.format)
       : [];
     if (currentLeaderboard.length > 0) {
       saveLeaderboard(currentLeaderboard).catch(console.error);
     }
-  }, [state.matches, state.participants]);
+  }, [state.matches, state.participants, state.isGenerated, state.format]);
 
   const handleClearHistory = async () => {
     await clearAllHistory();
@@ -129,10 +140,10 @@ export default function App() {
     addToast("History cleared", "info");
   };
 
-  const addToast = useCallback((message: string, type: Toast["type"]) => {
+  const addToast = (message: string, type: Toast["type"]) => {
     const id = crypto.randomUUID();
     setToasts((prev) => [...prev, { id, message, type }]);
-  }, []);
+  };
 
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -148,6 +159,11 @@ export default function App() {
       players,
       state.courts,
       state.durationMinutes,
+      {
+        format: state.format,
+        teamSize: state.teamSize,
+        pointsPerMatch: state.pointsPerMatch,
+      },
     );
     dispatch({ type: "GENERATE_MATCHES", payload: matches });
 
@@ -195,6 +211,11 @@ export default function App() {
       state.courts,
       state.matches,
       1,
+      {
+        format: state.format,
+        teamSize: state.teamSize,
+        pointsPerMatch: state.pointsPerMatch,
+      },
     );
 
     if (updated.length === state.matches.length) {
@@ -211,7 +232,7 @@ export default function App() {
   };
 
   const leaderboard: LeaderboardEntry[] = state.isGenerated
-    ? generateLeaderboard(state.matches, state.participants)
+    ? generateLeaderboard(state.matches, state.participants, state.format)
     : [];
 
   return (
@@ -224,6 +245,8 @@ export default function App() {
           courts={state.courts}
           teamSize={state.teamSize}
           durationMinutes={state.durationMinutes}
+          format={state.format}
+          pointsPerMatch={state.pointsPerMatch}
           onSportChange={(sport) =>
             dispatch({ type: "SET_SPORT", payload: sport })
           }
@@ -235,6 +258,12 @@ export default function App() {
           }
           onDurationChange={(duration) =>
             dispatch({ type: "SET_DURATION", payload: duration })
+          }
+          onFormatChange={(format) =>
+            dispatch({ type: "SET_FORMAT", payload: format })
+          }
+          onPointsPerMatchChange={(p) =>
+            dispatch({ type: "SET_POINTS_PER_MATCH", payload: p })
           }
           onGenerate={handleGenerate}
           disabled={state.isGenerated}
@@ -252,6 +281,7 @@ export default function App() {
             <Leaderboard
               entries={leaderboard}
               onGenerateMatch={handleGenerateMatch}
+              format={state.format}
             />
 
             {allTimeLeaderboard.length > 0 && (
